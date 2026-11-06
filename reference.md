@@ -204,10 +204,17 @@ Animated sprites and scenes get `<name>.gif` next to their PNG (which shows fram
 `pxl ascii` prints every frame of an anim. The live viewer loops animated assets after the
 painting replay ends ("animate" toggle).
 
+**Godot**: `build --godot` also writes a Godot 4 `SpriteFrames` resource (`<name>.tres`) beside every
+anim strip and sheet, made from its JSON: one animation per frame tag (its frames, per-frame
+durations, `speed` in fps, and `loop`, false for `loop: false` anims, written as Aseprite's
+`repeat: "1"` on the tag), and a one-frame animation per still entry of a sheet. The texture is
+referenced relative to the `.tres`, so build into the Godot project (`--out res-folder`) and assign
+it to an `AnimatedSprite2D`. `_preview/` holds a `.gdignore`, so Godot does not import previews.
+
 ## CLI
 
 ```
-node <pxl>/bin/pxl.js build <file> [--out DIR] [--only a,b] [--scale N] [--no-preview]
+node <pxl>/bin/pxl.js build <file> [--out DIR] [--only a,b] [--scale N] [--no-preview] [--godot]
 node <pxl>/bin/pxl.js serve <file> [--port 4321] [--out DIR | --no-out] [--no-preview]
 node <pxl>/bin/pxl.js ascii <file> <name>
 node <pxl>/bin/pxl.js list  <file>

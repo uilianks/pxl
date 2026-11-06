@@ -98,6 +98,77 @@ out/chars.png          out/chars.json                 sprite sheet + TexturePack
 out/_preview/*.png                                    upscaled previews with a pixel grid
 ```
 
+`--godot` also writes a Godot 4 `SpriteFrames` `.tres` beside every sheet and anim strip (one animation
+per tag, with frame durations and loop), ready for an `AnimatedSprite2D`.
+
+## Examples
+
+Each image is built by `npm run examples` from the file named under it (sources in
+[`examples/`](examples), images in [`docs/gallery/`](docs/gallery)).
+
+**Sprites, recolors and a sheet**: draw the left half, mirror it, outline it, then make variants by
+swapping colors. [`examples/basics.px.js`](examples/basics.px.js)
+
+```js
+sprite("slime", { mx: true, outline: "k" }, `
+  ....ggg
+  ..ggGGg
+  .ggGwGg
+  .gggggg
+  gggkwgg
+  gggkkgg
+  tgggggg
+  .tttttt`)
+sprite("slime_red", { base: "slime", swap: { g: "r", G: "o", t: "p" } })
+sprite("slime_blue", { base: "slime", swap: { g: "b", G: "B", t: "n" } })
+sprite("coin", { w: 10, h: 10 }, circ(4, 4, 4, "o"), circ(4, 4, 3, "y"), vline(4, 2, 5, "o"), px(3, 2, "w"))
+sheet("chars", ["slime*", "heart", "coin", "chest"], { cols: 4, pad: 1 })
+```
+
+<img src="docs/gallery/chars.png" alt="Sprite sheet: green, red, blue and winking slimes, a heart, a coin and a chest">
+
+**A procedural animation, placed in a sprite**: the flame's frames come from `c.phase`, so it loops
+seamlessly; the torch that stamps it is animated too. With `--godot` the build also writes
+`anims/flame.tres`, a `SpriteFrames` for Godot. [`examples/torch.px.js`](examples/torch.px.js)
+
+```js
+anim("flame", { w: 9, h: 12, frames: 6, fps: 10 }, (c) => {
+  const k = c.phase * Math.PI * 2, sway = Math.round(Math.sin(k) * 1.2)
+  c.poly([0, 11, 4 + sway, Math.round(1 + Math.sin(k * 2)), 8, 11], "r")
+  c.poly([2, 11, 4 + sway, Math.round(4 + Math.cos(k * 2)), 6, 11], "o")
+  c.poly([3, 11, 4, Math.round(7 + Math.sin(k)), 5, 11], "y")
+  c.px(4, 10, "w")
+})
+sprite("torch", { w: 13, h: 26, outline: "k" },
+  rect(5, 12, 3, 12, "n"), rect(3, 11, 7, 2, "d"), vline(5, 13, 10, "s"), stamp("flame", 2, 0))
+```
+
+<img src="docs/gallery/torch.gif" alt="Animated wall torch with a flickering flame">
+
+**Frames as patches**: a cat drawn once, then each `frame()` changes only the tail.
+[`examples/no_magic.px.js`](examples/no_magic.px.js)
+
+```js
+anim("cat", { outline: "k" }, `
+  .......................sK.
+  ........................K.
+  .s...s..................K.
+  .Ks.sKs........sssss...K..
+  .KKKKKK......ssKKKKKs.Ks..
+  KKKKKKKs...ssKKKKKKKKKK...
+  KkYKKkYKsssKKKKKKKKKKKK...
+  KKKKKKKKKKKKKKKKKKKKKKK...
+  .KKqKKrKKKKKKKKKKKKKKKK...
+  ..KKKKrKKKKKKKKKKKKKKKK...
+  ...KKKaKKKKKKKKKKKKKKK....
+  .KKKKK.KKKK...KKKKKKK.....
+  KKKKK.KKK....KKKKKKK......`,
+  frame({ ms: 300 }), frame({ ms: 300 }, grid(23, 0, "__K")), frame({ ms: 300 }, grid(23, 0, "_K")),
+  frame({ ms: 300 }, grid(22, 0, "sK_")))
+```
+
+<img src="docs/gallery/cat.gif" height="90" alt="Animated black cat flicking its tail">
+
 ## The live viewer
 
 `pxl serve art.px.js` opens a viewer that rebuilds on every save and replays the asset you edited
@@ -107,7 +178,7 @@ writes the same `out/` files as `build`.
 ## Commands
 
 ```
-pxl build <art.px.js> [--out DIR] [--only a,b] [--scale N] [--no-preview]
+pxl build <art.px.js> [--out DIR] [--only a,b] [--scale N] [--no-preview] [--godot]
 pxl serve <art.px.js> [--port 4321] [--out DIR | --no-out] [--no-preview]
 pxl ascii <art.px.js> <name>     print an asset as palette keys with x/y rulers
 pxl list  <art.px.js>            list assets, groups and sheets with source locations
@@ -160,8 +231,8 @@ Tip: ask the agent to start `pxl serve` so you can watch it paint in your browse
 
 ```sh
 npm install        # dev only: typescript, @types/node
-npm run check      # type check + tests
-node scripts/gallery.ts   # regenerate docs/gallery
+npm run check      # type check + tests + build every example and regenerate docs/gallery
+npm run examples   # just the examples and the gallery
 ```
 
 ```
@@ -169,7 +240,7 @@ src/core/     engine, no Node APIs: image, palette + ramps, canvas ops, build, t
 src/node/     vm sandbox loader, PNG/GIF encoders, outputs, CLI, live server
 src/viewer/   browser viewer (served type-stripped; no bundler)
 types/        pxl.d.ts globals for editor support in .px.ts files
-scripts/      build.js (dist/ for npm installs), gallery.ts
+scripts/      build.js (dist/ for npm installs), examples.ts, gallery.ts
 examples/     example art files
 test/         node:test suites
 ```

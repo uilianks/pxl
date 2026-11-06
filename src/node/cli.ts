@@ -11,9 +11,10 @@ import { traceFile } from "./trace.ts";
 
 const USAGE = `pxl — pixel-art DSL
 
-  pxl build <art.px.js> [--out DIR] [--only a,b] [--scale N] [--no-preview]
+  pxl build <art.px.js> [--out DIR] [--only a,b] [--scale N] [--no-preview] [--godot]
       Build PNGs (out/sprites, out/scenes, out/anims strips + JSON + GIF, sheets + JSON) and
-      previews (out/_preview; animated assets also get a .gif).
+      previews (out/_preview; animated assets also get a .gif). --godot also writes a Godot 4
+      SpriteFrames .tres beside every sheet and anim strip (one animation per tag).
   pxl serve <art.px.js> [--port 4321] [--out DIR | --no-out] [--no-preview]
       Live viewer: rebuilds on save and replays each asset's painting steps.
   pxl ascii <art.px.js> <name>
@@ -37,6 +38,7 @@ interface Args {
   out?: string | false;
   only?: string[];
   scale?: number;
+  godot?: boolean;
   preview?: boolean;
   port?: number;
   w?: number;
@@ -60,6 +62,7 @@ function parse(argv: string[]): Args {
     else if (v === "--no-out") a.out = false;
     else if (v === "--only") a.only = val().split(",").map((s) => s.trim()).filter(Boolean);
     else if (v === "--scale") a.scale = Number(val());
+    else if (v === "--godot") a.godot = true;
     else if (v === "--port") a.port = Number(val());
     else if (v === "--w") a.w = Number(val());
     else if (v === "--h") a.h = Number(val());
@@ -90,7 +93,7 @@ export async function main(argv: string[]): Promise<number> {
     switch (a.cmd) {
       case "build": {
         const p = loadProject(file);
-        const r = writeOutputs(p, outDir, { only: a.only, preview: a.preview, scale: a.scale });
+        const r = writeOutputs(p, outDir, { only: a.only, preview: a.preview, scale: a.scale, godot: a.godot });
         for (const l of r.lines) console.log(l);
         for (const e of r.errors) console.error("error: " + e.message);
         console.log(`-> ${outDir}${r.errors.length ? ` (${r.errors.length} error${r.errors.length > 1 ? "s" : ""})` : ""}`);
@@ -125,6 +128,7 @@ export async function main(argv: string[]): Promise<number> {
               for (let k = 0; k < s; k++) for (const [px, py] of [[x * s + k, y * s], [x * s + k, y * s + s - 1], [x * s, y * s + k], [x * s + s - 1, y * s + k]])
                 pv.set(px, py, mark[f.rule] ?? 0xff0000ff);
             writePng(join(outDir, "_preview", `${name}.lint.png`), pv);
+            writeFileSync(join(outDir, "_preview", ".gdignore"), "");
           }
         }
         console.log(`${total} finding${total === 1 ? "" : "s"} in ${names.length} asset${names.length === 1 ? "" : "s"}`);

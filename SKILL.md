@@ -124,3 +124,5 @@ Dynamic lighting (lamps, light blocked by solid layers, sky light, Terraria-styl
   Use `shade: true` layers with a `poly` for cast shadows across many objects.
 - Use mnemonic keys (`g`/`G` light/dark green). Keep 2–4 shades per material for a clean pixel-art look.
 - Build with `--only` while iterating; a full build also writes every preview.
+- For a Godot game, build into the project with `--godot`: every sheet and anim strip gets a
+  `SpriteFrames` `.tres` (one animation per tag) for an `AnimatedSprite2D`; previews are `.gdignore`d.

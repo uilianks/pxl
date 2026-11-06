@@ -6,6 +6,7 @@ import type { Img } from "../core/image.ts";
 import type { Project } from "../core/project.ts";
 import { type FrameTag, packSheet, preview, previewScale, sheetJson } from "../core/render.ts";
 import { normalImage } from "../core/normals.ts";
+import { spriteFramesTres } from "../core/godot.ts";
 import { encodeGif } from "./gif.ts";
 import { encodePng } from "./png.ts";
 
@@ -16,6 +17,8 @@ export interface OutputOptions {
   preview?: boolean;
   /** Fixed preview scale (default: auto). */
   scale?: number;
+  /** Also write a Godot 4 SpriteFrames .tres beside every sheet and anim strip. */
+  godot?: boolean;
 }
 
 export interface OutputResult {
@@ -42,6 +45,11 @@ export function writeOutputs(p: Project, out: string, opts: OutputOptions = {}):
         errors.push(new PxError(`unknown asset or sheet '${n}'${didYouMean(n, [...p.order, ...sheetNames])}`));
 
   const want = opts.only ? new Set(opts.only) : undefined;
+  if (opts.preview !== false) write(join(out, "_preview", ".gdignore"), "");   // Godot skips the previews
+  const sheetOut = (dir: string, n: string, json: string) => {
+    write(join(dir, n + ".json"), json);
+    if (opts.godot) write(join(dir, n + ".tres"), spriteFramesTres(json));
+  };
   const prev = (name: string, img: Img): string => {
     if (opts.preview === false) return "";
     const s = opts.scale ?? previewScale(img);
@@ -61,7 +69,7 @@ export function writeOutputs(p: Project, out: string, opts: OutputOptions = {}):
         // Anims: a horizontal strip of frames + Aseprite-style JSON, plus a GIF.
         const { sheet, frames: fr } = packSheet(frames.map((f, i) => ({ name: `${n}_${i}`, img: f.img, ms: f.ms })), frames.length);
         writePng(join(out, dir, n + ".png"), sheet);
-        write(join(out, dir, n + ".json"), sheetJson(n + ".png", sheet, fr, [{ name: n, from: 0, to: fr.length - 1 }]));
+        sheetOut(join(out, dir), n, sheetJson(n + ".png", sheet, fr, [{ name: n, from: 0, to: fr.length - 1, once: b.anim?.once }]));
         shown = packSheet(frames.map((f) => ({ name: "", img: f.img })), frames.length, 1).sheet;
       } else {
         writePng(join(out, dir, n + ".png"), b.img);
@@ -94,13 +102,13 @@ export function writeOutputs(p: Project, out: string, opts: OutputOptions = {}):
       for (const name of p.sheetNames(s)) {
         const fr = p.frames(name);
         if (!fr.length) { items.push({ name, img: p.image(name) }); continue; }
-        tags.push({ name, from: items.length, to: items.length + fr.length - 1 });
+        tags.push({ name, from: items.length, to: items.length + fr.length - 1, once: p.timeline(name)?.once });
         fr.forEach((f, i) => items.push({ name: `${name}_${i}`, img: f.img, ms: f.ms }));
       }
       if (!items.length) throw new PxError("sheet is empty (no entries matched)");
       const { sheet, frames } = packSheet(items, s.opts.cols, s.opts.pad);
       writePng(join(out, s.name + ".png"), sheet);
-      write(join(out, s.name + ".json"), sheetJson(s.name + ".png", sheet, frames, tags));
+      sheetOut(out, s.name, sheetJson(s.name + ".png", sheet, frames, tags));
       lines.push(`sheet ${s.name} ${sheet.w}x${sheet.h} (${frames.length} frames)${prev(s.name, sheet)}`);
     } catch (e) {
       errors.push(wrap(e).within(`sheet '${s.name}'`, s.loc));

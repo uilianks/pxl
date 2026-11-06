@@ -132,3 +132,26 @@ test("serve: feedback from the viewer is written next to the outputs", async () 
     s.close();
   }
 });
+
+test("cli build --godot writes SpriteFrames beside sheets and strips; previews are .gdignored", async () => {
+  const { dir, file } = tmpArt(`use("pico8")
+sprite("dot", "8")
+anim("blink", { fps: 4 }, "7", frame(), frame({ hold: 2 }, px(0, 0, "8")))
+anim("pop", { fps: 10, loop: false }, "7", frame(), frame(px(0, 0, "8")))
+sheet("all", ["*"])`);
+  const log = console.log;
+  console.log = () => {};
+  try { assert.equal(await main(["build", file, "--godot"]), 0); } finally { console.log = log; }
+  const out = join(dir, "out");
+  assert.ok(existsSync(join(out, "_preview", ".gdignore")));
+  const strip = readFileSync(join(out, "anims", "blink.tres"), "utf8");
+  assert.match(strip, /^\[gd_resource type="SpriteFrames" load_steps=4 format=3\]/);
+  assert.match(strip, /path="blink.png"/);
+  assert.match(strip, /"duration": 1,\n"texture": SubResource\("f0"\)[^]*"duration": 2,/);
+  assert.match(strip, /"loop": true,\n"name": &"blink",\n"speed": 4\n/);
+  const all = readFileSync(join(out, "all.tres"), "utf8");
+  assert.match(all, /"loop": false,\n"name": &"pop",\n"speed": 10\n/);
+  assert.match(all, /"name": &"dot"/);
+  assert.equal(JSON.parse(readFileSync(join(out, "all.json"), "utf8")).meta.frameTags.find((t: { name: string }) => t.name === "pop").repeat, "1");
+  assert.match(readFileSync(join(out, "anims", "pop.tres"), "utf8"), /"loop": false/);
+});

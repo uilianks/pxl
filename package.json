@@ -30,11 +30,12 @@
     "prepare": "node scripts/build.js",
     "test": "node --test --disable-warning=ExperimentalWarning \"test/**/*.test.ts\"",
     "typecheck": "tsc -p tsconfig.json",
-    "check": "npm run typecheck && npm test"
+    "examples": "node scripts/examples.ts",
+    "check": "npm run typecheck && npm test && npm run examples"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
-    "typescript": "^7.0.0"
+    "@types/node": "^22.20.5",
+    "typescript": "^7.0.2"
   },
   "keywords": [
     "pixel-art",

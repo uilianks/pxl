@@ -64,6 +64,8 @@ export interface FrameTag {
   name: string;
   from: number;
   to: number;
+  /** Plays once and holds (written as Aseprite's `repeat: "1"`). */
+  once?: boolean;
 }
 
 /** Shelf packing: `cols` frames per row, `pad` px between them. */
@@ -99,6 +101,6 @@ export function sheetJson(image: string, sheet: Img, frames: SheetFrame[], tags:
     };
   }
   const meta: Record<string, unknown> = { app: "pxl", image, format: "RGBA8888", size: { w: sheet.w, h: sheet.h }, scale: "1" };
-  if (tags.length) meta.frameTags = tags.map((t) => ({ ...t, direction: "forward" }));
+  if (tags.length) meta.frameTags = tags.map(({ once, ...t }) => ({ ...t, direction: "forward", ...(once ? { repeat: "1" } : {}) }));
   return JSON.stringify({ frames: out, meta }, null, 1) + "\n";
 }
