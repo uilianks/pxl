@@ -252,3 +252,7 @@ inside `node_modules`).
 ## License
 
 [MIT](LICENSE). Copyright crsolver (original pxl); fork additions by uilianks under the same license.
+
+## Support
+
+If this tool helps you, you can support its development on [Ko-fi](https://ko-fi.com/uiliankidricki).
