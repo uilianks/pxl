@@ -65,6 +65,13 @@ by plate from shaded solids on `shades` ramps, each part outlined with `selout`.
 painted per pixel in true color: the stained-glass window's light is traced onto the flagstones and
 through the dust (the knight's shadow cuts the beam), then depth of field, bloom and a vignette.
 
+<p><img src="showcase/media/knight_iso_hd2d_1080p.png" width="100%" alt="The same knight in isometric view on a floating slab of 5x5 flagstones, his tile ringed in gold and the four neighboring tiles washed blue"></p>
+
+The isometric take ([`showcase/knight_iso.px.js`](showcase/knight_iso.px.js)): the knight is a
+3D model of signed distance fields ray-marched by a true 2:1 isometric camera, standing on a 5×5
+slab of 56×28 tiles. His tile is ringed in gold like a tactics cursor, the four he could step to
+are washed blue, and his shadow is found by marching from each floor pixel toward the sun.
+
 ## Quick start
 
 ```sh
