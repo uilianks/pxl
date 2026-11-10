@@ -57,6 +57,14 @@ directed with annotate mode: the creature is a small 3D model rendered into pixe
 shaded from their normals with `shades` ramps, tentacles as tubes) and every revision after the
 first round came from painted marks and notes.
 
+<p><img src="showcase/media/knight_hd2d_1080p.png" width="100%" alt="A pixel-art knight in plate armor with a red plume, sword and blue shield, standing in a beam of light from a stained-glass window in a ruined chapel, the background softly out of focus"></p>
+
+*The Vigil* ([`showcase/knight.px.js`](showcase/knight.px.js), 384×216, so ×5 is 1920×1080) is a
+study in the HD-2D manner: a crisp sprite in a lit, depth-blurred world. The knight is built plate
+by plate from shaded solids on `shades` ramps, each part outlined with `selout`. The chapel is
+painted per pixel in true color: the stained-glass window's light is traced onto the flagstones and
+through the dust (the knight's shadow cuts the beam), then depth of field, bloom and a vignette.
+
 ## Quick start
 
 ```sh
