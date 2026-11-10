@@ -38,7 +38,7 @@ const sdBox = (x, y, z, cx, cy, cz, hx, hy, hz) => {
   const qx = Math.abs(x - cx) - hx, qy = Math.abs(y - cy) - hy, qz = Math.abs(z - cz) - hz
   return Math.hypot(Math.max(qx, 0), Math.max(qy, 0), Math.max(qz, 0)) + Math.min(Math.max(qx, qy, qz), 0)
 }
-const PLUME = Array.from({ length: 13 }, (_, i) => { const t = i / 12; return [-1 - 15 * t ** 1.1, 82.5 + 9 * Math.sin(t * Math.PI * 0.9) - 14 * t * t, 1.8 + 3.2 * Math.sin(Math.min(1, t * 1.2 + 0.1) * Math.PI) ** 0.8] })
+const PLUME = Array.from({ length: 31 }, (_, i) => { const t = i / 30; return [-1 - 15 * t ** 1.1, 82.5 + 9 * Math.sin(t * Math.PI * 0.9) - 14 * t * t, 1.8 + 3.2 * Math.sin(Math.min(1, t * 1.2 + 0.1) * Math.PI) ** 0.8] })
 const SN = norm([0.35, 1, 0]), ST = [-SN[1], SN[0]], SC = [5.5, 19]     // the shield's facing, its horizontal axis, its center
 const shield = (x, y, z) => {
   const qx = x - SC[0], qy = y - SC[1], dn = qx * SN[0] + qy * SN[1], us = qx * ST[0] + qy * ST[1]
@@ -47,14 +47,21 @@ const shield = (x, y, z) => {
 }
 
 // The knight: distance to the nearest part; HIT says which.
+// The eight facings, 45 degrees apart, named by where he looks on screen (se = lower right).
+const DIRS = ["se", "s", "sw", "w", "nw", "n", "ne", "e"]
+let FC = 1, FS = 0                                                    // cos, sin of the current facing
+const face = (dir) => { FC = Math.cos((dir * Math.PI) / 4); FS = Math.sin((dir * Math.PI) / 4) }
+const local = ([x, y, z]) => [x * FC + y * FS, y * FC - x * FS, z]    // world -> the knight's own axes
 let HIT = 0
-const map = (x, y, z) => {
+const map = (wx, wy, z) => {
+  const x = wx * FC + wy * FS, y = wy * FC - wx * FS
   let b = 1e9
   HIT = 0
   const U = (d, i) => { if (d < b) { b = d; HIT = i } }
   { // cape: a sheet from the shoulders, swept back and a little aside
-    const xc = -8.5 - (54 - z) * 0.2 - Math.sin(z * 0.12) * 1.2
-    U(sdBox(x - xc, y + 1.5, z, 0, 0, 31, 1.1, 12.5 + (54 - z) * 0.1, 24), 1)
+    // (it wraps the shoulders, so its edges come forward; folds deepen toward the hem)
+    const k = (54 - z) / 48, xc = -9.5 - k * 9 - Math.sin(z * 0.12) * 1.2 + y * y * 0.022 + Math.sin(y * 0.85 + 1) * (0.3 + k * 1.3)
+    U(sdBox(x - xc, y + 1, z, 0, 0, 31, 1.1, 11 + k * 5, 24) * 0.7, 1)
   }
   for (const [s, id] of [[1, 2], [-1, 3]]) {
     const ly = s * 5.8
@@ -93,8 +100,8 @@ const HC = Math.cos(0.42), HS = Math.sin(0.42)
 const paint = (id, [x, y, z], n) => {
   const steel = (b = 0) => tone(n, "123456", true, b), gold = (b = 0) => tone(n, "ghij", false, b)
   switch (id) {
-    case 1: return tone(norm([n[0], n[1] + Math.sin(y * 0.75 + z * 0.06) * 0.6, n[2]]), "abcde", false, -0.08)
-    case 17: return tone(norm([n[0] + Math.sin(x * 1.3 + z * 0.9) * 0.25, n[1], n[2]]), "abcde", false, -0.1)
+    case 1: return tone(n, "abcde", false, -0.06)
+    case 17: return tone(n, "abcde", false, -0.1 + (Math.sin(x * 1.5 + z * 1.1) > 0.6 ? -0.14 : 0))   // barbs
     case 8: return z < 23.2 || (Math.abs(z - 30) < 1.2 && Math.abs(y) < 1.3) ? gold(0.1) : tone(n, "abcde", false, Math.abs(y) > 3 ? -0.1 : 0.04)
     case 5: return z > 56 ? gold(0.1) : z < 40.2 ? (Math.abs(y) < 2.3 && x > 0 ? gold(0.15) : tone(n, "tuv")) : steel()
     case 6: return Math.abs(z - 34) < 0.6 ? "2" : steel(-0.04)
@@ -132,7 +139,8 @@ const paint = (id, [x, y, z], n) => {
 
 // Sprite: 72 wide, the knight's ground point at (KOX, KOY).
 const KW = 72, KH = 100, KOX = 36, KOY = 88
-sprite("knight_iso", { w: KW, h: KH, selout: "K" }, (c) => {
+const knight = (name, dir) => sprite(name, { w: KW, h: KH, selout: "K" }, (c) => {
+  face(dir)
   const ids = new Int16Array(KW * KH), dep = new Float32Array(KW * KH), keys = new Array(KW * KH)
   for (let py = 0; py < KH; py++) for (let px = 0; px < KW; px++) {
     const u = px + 0.5 - KOX, v = py + 0.5 - KOY
@@ -148,7 +156,7 @@ sprite("knight_iso", { w: KW, h: KH, selout: "K" }, (c) => {
     const e = 0.4
     const n = norm([map(p[0] + e, p[1], p[2]) - map(p[0] - e, p[1], p[2]), map(p[0], p[1] + e, p[2]) - map(p[0], p[1] - e, p[2]), map(p[0], p[1], p[2] + e) - map(p[0], p[1], p[2] - e)])
     const i = py * KW + px
-    ids[i] = hit; dep[i] = t; keys[i] = paint(hit, p, n)
+    ids[i] = hit; dep[i] = t; keys[i] = paint(hit, local(p), n)
   }
   // where a nearer plate overlaps a farther one, the farther one gets a dark line along the seam
   for (let py = 0; py < KH; py++) for (let px = 0; px < KW; px++) {
@@ -163,6 +171,9 @@ sprite("knight_iso", { w: KW, h: KH, selout: "K" }, (c) => {
     c.px(px, py, k)
   }
 })
+DIRS.forEach((d, i) => knight("knight_iso_" + d, i))
+sprite("knight_iso", { base: "knight_iso_se" })
+sheet("knight_iso_dirs", DIRS.map((d) => "knight_iso_" + d), { cols: 4, pad: 1 })
 
 // ---------------------------------------------------------------------------------------------
 // The slab: 5x5 flagstones, each a 56x28 diamond. a and b are the two floor axes in screen units
@@ -197,9 +208,10 @@ const writeCanvas = (c, b) => { for (let y = 0; y < H; y++) for (let x = 0; x < 
 const toScreen = (a, b, z = 0) => [TOPX + (a - b) / 2, TOPY + (a + b) / 4 - z]
 
 let MASK = null
-scene("knight_iso_hd2d", { w: W, h: H, bg: "#0c0b16" },
+const diorama = (name, dir) => scene(name, { w: W, h: H, bg: "#0c0b16" },
   (c) => {
     const B = buf()
+    face(dir)
     MASK = new Uint8Array(W * H)                                       // 1 = the slab (kept sharp), 0 = backdrop
     // --- backdrop: deep blue haze, a soft glow behind the slab, far bokeh
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -296,9 +308,9 @@ scene("knight_iso_hd2d", { w: W, h: H, bg: "#0c0b16" },
     }
     writeCanvas(c, B)
   },
-  stamp("knight_iso", KSX - KOX - 1, KSY - KOY - 1),
+  stamp("knight_iso_" + DIRS[dir], KSX - KOX - 1, KSY - KOY - 1),
   (c) => {
-    const B = readCanvas(c), K = c.asset("knight_iso")
+    const B = readCanvas(c), K = c.asset("knight_iso_" + DIRS[dir])
     // the knight takes the room's light: a touch dimmer and cooler toward the feet
     for (let y = 0; y < K.h; y++) for (let x = 0; x < K.w; x++) {
       if (!(K.get(x, y) & 255)) continue
@@ -329,3 +341,5 @@ scene("knight_iso_hd2d", { w: W, h: H, bg: "#0c0b16" },
     }
     writeCanvas(c, B)
   })
+diorama("knight_iso_hd2d", 0)
+DIRS.forEach((d, i) => diorama("knight_iso_turn_" + d, i))

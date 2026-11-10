@@ -1,0 +1,174 @@
+{
+ "frames": {
+  "knight_iso_se": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 74,
+    "h": 102
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 74,
+    "h": 102
+   },
+   "sourceSize": {
+    "w": 74,
+    "h": 102
+   }
+  },
+  "knight_iso_s": {
+   "frame": {
+    "x": 75,
+    "y": 0,
+    "w": 74,
+    "h": 102
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 74,
+    "h": 102
+   },
+   "sourceSize": {
+    "w": 74,
+    "h": 102
+   }
+  },
+  "knight_iso_sw": {
+   "frame": {
+    "x": 150,
+    "y": 0,
+    "w": 74,
+    "h": 102
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 74,
+    "h": 102
+   },
+   "sourceSize": {
+    "w": 74,
+    "h": 102
+   }
+  },
+  "knight_iso_w": {
+   "frame": {
+    "x": 225,
+    "y": 0,
+    "w": 74,
+    "h": 102
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 74,
+    "h": 102
+   },
+   "sourceSize": {
+    "w": 74,
+    "h": 102
+   }
+  },
+  "knight_iso_nw": {
+   "frame": {
+    "x": 0,
+    "y": 103,
+    "w": 74,
+    "h": 102
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 74,
+    "h": 102
+   },
+   "sourceSize": {
+    "w": 74,
+    "h": 102
+   }
+  },
+  "knight_iso_n": {
+   "frame": {
+    "x": 75,
+    "y": 103,
+    "w": 74,
+    "h": 102
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 74,
+    "h": 102
+   },
+   "sourceSize": {
+    "w": 74,
+    "h": 102
+   }
+  },
+  "knight_iso_ne": {
+   "frame": {
+    "x": 150,
+    "y": 103,
+    "w": 74,
+    "h": 102
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 74,
+    "h": 102
+   },
+   "sourceSize": {
+    "w": 74,
+    "h": 102
+   }
+  },
+  "knight_iso_e": {
+   "frame": {
+    "x": 225,
+    "y": 103,
+    "w": 74,
+    "h": 102
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 74,
+    "h": 102
+   },
+   "sourceSize": {
+    "w": 74,
+    "h": 102
+   }
+  }
+ },
+ "meta": {
+  "app": "pxl",
+  "image": "knight_iso_dirs.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 299,
+   "h": 205
+  },
+  "scale": "1"
+ }
+}
